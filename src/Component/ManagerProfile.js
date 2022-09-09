@@ -22,6 +22,8 @@ const ManagerProfile = () => {
     const [leaves, setLeaves] = useState([]);
     const [showEmps, setShowEmps] = useState(false);
     const [showLeaves, setShowLeaves] = useState(false);
+    const [isApproved, setIsApproved] = useState(false);
+    const [isDenied, setIsDenied] = useState(false);
 
     const navigate = useNavigate();
     const { id } = useParams();
@@ -63,7 +65,7 @@ const ManagerProfile = () => {
             });
            
 
-    }, [])
+    }, [isApproved, isDenied])
 
     //methods
     const showEmployees = () => {
@@ -79,6 +81,60 @@ const ManagerProfile = () => {
         }
     }
 
+    const handleApprove = (leave) => {
+
+        var leaveObject = {
+            ...leave,
+            "leavestatus": "approved"
+        }
+        const { leaveid } = leave;
+       
+        //update
+        fetch(`http://localhost:5196/api/Leaves/${leaveid}`, {
+            method: 'PUT',
+            headers: {
+                'Accept': 'application/json',
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(leaveObject)
+        })
+            .then(res => res.json())
+            .then(res => {
+                
+               // alert("HIIIII");
+            })
+            .catch(err => console.log(err));
+        setIsApproved(true);
+        //again loading
+        
+
+
+        
+    }
+    const handleDeny = (leave) => {
+        var leaveObject = {
+            ...leave,
+            "leavestatus": "denied"
+        }
+        const { leaveid } = leave;
+
+        //update
+        fetch(`http://localhost:5196/api/Leaves/${leaveid}`, {
+            method: 'PUT',
+            headers: {
+                'Accept': 'application/json',
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(leaveObject)
+        })
+            .then(res => res.json())
+            .then(res => {})
+            .catch(err => console.log(err));
+        setIsDenied(true);
+ //       window.location.reload();
+
+    }
+
     return (
         <div >
             <h2>Hii! {manager.empname}</h2>
@@ -89,7 +145,7 @@ const ManagerProfile = () => {
             <hr />
             <button className="btn btn-lg btn-primary" onClick={showEmployees} >My Employees</button>
             <button className="btn btn-lg btn-info" onClick={showLeavesForManager} >Show Leaves</button>
-            {console.log(showEmps+"HIIIIII")}
+           
             {showEmps && <table class="table table-striped">
                 <thead>
                     <tr>
@@ -139,12 +195,30 @@ const ManagerProfile = () => {
                             <td>{e.leaveto}</td>
                             <td>{e.noofdays}</td>
                             <td>{e.leavetype}</td>
-                            <td>
-                                <button className="btn  btn-success"  >Approve</button>                                
-                            </td>
-                            <td>
-                                <button className="btn  btn-danger" >Deny</button>
-                            </td>
+                            {e.leavestatus == "pending" &&
+                                <td>
+                                    <button className="btn  btn-success" onClick={() => handleApprove(e)} >Approve</button>
+                                </td>
+                            }
+                            {e.leavestatus == "pending" &&
+                                <td>
+                                    <button className="btn  btn-danger" onClick={() => handleDeny(e)} >Deny</button>
+                                </td>
+                            }
+                            {e.leavestatus == "approved" &&
+                                <td>
+                                     <button className="btn  btn-success" disabled={true} >Approved</button>
+                                </td>
+                            }
+                            {e.leavestatus == "denied" &&
+                                <td>
+                                    <button className="btn  btn-danger" disabled={true} >Denied</button>
+                                </td>
+                            }
+                                
+
+                            
+                            
 
                             </tr>
                         ))}
